@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facility Booking</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #ececec;
+        }
+
+        .main {
+            background-color: #FFF;
+            margin: 5% 25%;
+            width: 800px;
+            height: 400px;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            box-shadow: 10px 10px rgb(164, 162, 162);
+        }
+
+        .main h1 {
+            text-align: center;
+            margin-top: 20px;
+            font-family: "Roboto", sans-serif;
+            text-transform: uppercase;
+        }
+
+        .frm {
+            text-align: center;
+            border: 1px solid transparent;
+            padding: 10px;
+            margin-top: 20px;
+            margin-left: 20px;
+            width: 750px;
+            height: 250px;
+            font-size: 20px;
+        }
+
+        .frm button {
+            margin: 10xp;
+            padding: 10px;
+            width: 100px;
+            font-size: 15px;
+        }
+
+        .main .res {
+            width: 100%;
+            text-align: center;
+            font-size: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main">
+        <h1>ADDA Clubhouse & Tennis Court Booking</h1>
+        <div class="frm">
+            <form id="booking-form">
+                <label for="facility">Facility:</label>
+                <select name="facility" id="facility" required>
+                    <option value="Clubhouse">Clubhouse</option>
+                    <option value="Tennis Court">Tennis Court</option>
+                </select><br><br>
+                <label for="date">Date:</label>
+                <input type="date" id="date" name="date" required><br><br>
+                <label for="start_time">Start Time:</label>
+                <input type="time" id="start_time" name="start_time" required><br><br>
+                <label for="end_time">End Time:</label>
+                <input type="time" id="end_time" name="end_time" required><br><br>
+                <button type="submit">Book</button>
+            </form>
+        </div>
+        <div class="res">
+            <div id="response"></div>
+        </div>
+    </div>
+
+
+    <div id="response"></div>
+
+    <script>
+        document.getElementById('booking-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch('/book', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('response').innerText = data.message;
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+
+</html>
