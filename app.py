@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
 
-# Configuration - facility, start_time, end_time, booking_amount
 facilities = {
     "Clubhouse": {
         "10:00-16:00": 100,
@@ -13,7 +12,7 @@ facilities = {
     }
 }
 
-bookings = {}  # Store booked slots
+bookings = {}  
 
 
 def is_slot_available(facility, date, start_time, end_time):
@@ -35,14 +34,26 @@ def book_facility(facility, date, start_time, end_time):
     bookings[facility][date].append((start_time, end_time))
 
 
+# def calculate_booking_amount(facility, start_time, end_time):
+#     booking_amount = 0
+#     for period, amount in facilities[facility].items():
+#         start_period, end_period = period.split("-")
+#         if start_time >= start_period and end_time <= end_period:
+#             booking_amount += amount * (int(end_time.split(':')[0]) - int(start_time.split(':')[0]))
+#             break
+#     return booking_amount
+
 def calculate_booking_amount(facility, start_time, end_time):
     booking_amount = 0
     for period, amount in facilities[facility].items():
         start_period, end_period = period.split("-")
-        if start_time >= start_period and end_time <= end_period:
-            booking_amount += amount * (int(end_time.split(':')[0]) - int(start_time.split(':')[0]))
-            break
+        if start_time < end_period and end_time > start_period:  # Check if there's overlap
+            start = max(start_time, start_period)
+            end = min(end_time, end_period)
+            hours_booked = (int(end.split(':')[0]) - int(start.split(':')[0]))
+            booking_amount += amount * hours_booked
     return booking_amount
+
 
 
 @app.route('/')
@@ -58,8 +69,13 @@ def book():
     end_time = request.form['end_time']
     if is_slot_available(facility, date, start_time, end_time):
         booking_amount = calculate_booking_amount(facility, start_time, end_time)
-        book_facility(facility, date, start_time, end_time)
-        response = f"{facility}, {date}, {start_time} - {end_time}, Booked, Rs. {booking_amount}"
+        if booking_amount > 0:
+            book_facility(facility, date, start_time, end_time)
+            response = f"{facility}, {date}, {start_time} - {end_time}, Booked, Rs. {booking_amount}"
+        else:
+            response = f"{facility}, {date}, {start_time} - {end_time}, Booking Failed, Invalid time"
+
+    
     else:
         response = f"{facility}, {date}, {start_time} - {end_time}, Booking Failed, Already Booked"
     return jsonify({'message': response})
